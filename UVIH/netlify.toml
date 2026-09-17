@@ -1,3 +1,4 @@
 [build]
-  publish = "."
-  functions = "netlify/functions"
+  base = "UVIH"
+  publish = "UVIH"
+  functions = "UVIH/netlify/functions"
