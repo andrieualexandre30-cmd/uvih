@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livret Cadre/Référent UVIH - ACR</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- CSS Personnalisé pour Popups et Transitions -->
+    <style>
+        .modal-welcome-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(11, 17, 32, 0.95);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .modal-welcome-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .modal-welcome-content {
+            background: #172033;
+            border: 1px solid #2d3d5a;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 520px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            color: #ffffff;
+        }
+
+        .modal-welcome-header h2 {
+            margin: 0 0 16px 0;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .modal-welcome-body {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            cursor: pointer;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .checkbox-container input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #3b82f6;
+        }
+
+        .btn-access {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .btn-access:disabled {
+            background-color: #2a364f;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .btn-access:enabled {
+            background-color: #2563eb;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .btn-access:enabled:hover {
+            background-color: #1d4ed8;
+        }
+
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .welcome-logo {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            margin-bottom: 28px;
+        }
+
+        .welcome-screen h2 {
+            margin: 0 0 16px 0;
+            font-size: 2.2rem;
+            color: #ffffff;
+            font-weight: 800;
+        }
+
+        .access-status {
+            color: #10b981;
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .author-name {
+            position: absolute;
+            bottom: 40px;
+            color: #64748b;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col">
+
+    <!-- 1. POPUP AVERTISSEMENT -->
+    <div id="pop-avertissement" class="modal-welcome-overlay" style="z-index: 10000;">
+        <div class="modal-welcome-content">
+            <div class="modal-welcome-header">
+                <h2>Avertissement</h2>
+            </div>
+            <div class="modal-welcome-body">
+                <p>Cette application est un <strong>outil strictly destiné à la formation et à l'apport de connaissances</strong>.</p>
+                <p>Il ne se substitue pas à l'avis de professionnels, de référents ou d'experts en soins d'urgence.</p>
+                <p>L'ensemble des contenus, visuels et scénarios est protégé par le <strong>droit d'auteur</strong>.</p>
+                <p>Toute reproduction, diffusion, transmission ou capture d'écran est <strong>strictement interdite</strong> sans autorisation préalable.</p>
+            </div>
+            <label class="checkbox-container">
+                <input type="checkbox" id="chk-terms" onchange="accepterConditions()">
+                J'ai lu et j'accepte les conditions d'utilisation.
+            </label>
+            <button id="btn-access" class="btn-access" disabled onclick="validerAvertissement()">
+                Accéder
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. PAGE DE BIENVENUE -->
+    <div id="page-bienvenue" class="modal-welcome-overlay">
+        <div class="welcome-screen">
+            <img src="logo-uvih.png" alt="Logo UVIH" class="welcome-logo">
+            <img src="logo-chu.png" alt="Logo CHU" class="welcome-logo" style="max-height: 50px; width: auto;">
+            <h2>Bienvenue sur le livret Cadre/Référent UVIH</h2>
+            <p class="access-status">Accès autorisé</p>
+            <p class="author-name">Création A.Andrieu</p>
+        </div>
+    </div>
+
+    <!-- 3. APPLICATION PRINCIPALE -->
+    <div id="app-principal" class="hidden flex-1 flex flex-col min-h-screen">
+        
+        <!-- En-tête de l'application -->
+        <header class="bg-slate-900 text-white p-4 shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-xl font-bold tracking-wide">LIVRET CADRE/REFERENT UVIH — ACR</h1>
+                <p class="text-xs text-slate-400">Dispositif institutionnel HAS Critère 2.2-12</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
+                    Unité sélectionnée : <span id="active-service-label" class="font-bold text-emerald-400">Non sélectionnée</span>
+                </div>
+                <!-- Chronomètre dans le Header -->
+                <div class="bg-red-950/80 border border-red-600 px-3 py-1.5 rounded-lg text-xs font-mono font-bold text-red-500 shadow flex items-center gap-1.5">
+                    <svg class="w-4 h-4 animate-pulse text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span id="header-timer">00:00:00</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- BARRE DE NAVIGATION PAR ONGLETS -->
+        <nav class="bg-white border-b border-slate-200 shadow-sm overflow-x-auto">
+            <div class="flex max-w-6xl mx-auto text-sm font-semibold text-slate-600 min-w-max">
+                <button onclick="switchTab('tab1')" id="nav-tab1" class="px-4 py-3 border-b-2 border-blue-600 text-blue-600 flex items-center gap-1.5 font-bold">
+                    <span>Pré-requis & Service</span>
+                </button>
+                <button onclick="switchTab('tab2')" id="nav-tab2" class="px-4 py-3 border-b-2 border-transparent hover:text-blue-600 flex items-center gap-1.5">
+                    <span>Scénario & Consignes</span>
+                </button>
+                <button onclick="switchTab('tab3')" id="nav-tab3" class="px-4 py-3 border-b-2 border-transparent hover:text-blue-600 flex items-center gap-1.5">
+                    <span>Grille d'Observation</span>
+                </button>
+                <button onclick="switchTab('tab4')" id="nav-tab4" class="px-4 py-3 border-b-2 border-transparent hover:text-blue-600 flex items-center gap-1.5">
+                    <span>RETEX (5 min)</span>
+                </button>
+                <button onclick="switchTab('tab5')" id="nav-tab5" class="px-4 py-3 border-b-2 border-transparent hover:text-blue-600 flex items-center gap-1.5">
+                    <span>Synthèse & Plan d'action</span>
+                </button>
+                <button onclick="switchTab('tab6')" id="nav-tab6" class="px-4 py-3 border-b-2 border-transparent hover:text-blue-600 flex items-center gap-1.5">
+                    <span>Mémo & Rappel</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- CONTENU PRINCIPAL -->
+        <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6">
+
+            <!-- ONGLET 1 -->
+            <section id="tab1" class="space-y-6">
+                <!-- 1. Pourquoi cet exercice ? -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-800 border-b pb-2 mb-3">1. Pourquoi cet exercice ? (Critère HAS)</h2>
+
+                    <p class="text-sm text-slate-600 mb-2">Le Critère HAS 2.2-12 prévoit notamment que :</p>
+
+                    <ul class="list-disc pl-8 text-sm text-slate-600 space-y-1 mb-4">
+                        <li>Les professionnels connaissent le numéro d'appel unique et dédié</li>
+                        <li>Les professionnels sont formés aux gestes de première urgence</li>
+                        <li>Les chariots ou sacs d'urgence sont adaptés et accessibles</li>
+                        <li>Leur contrôle est réalisé et tracé</li>
+                        <li>Les professionnels réalisent des exercices de mise en situation</li>
+                    </ul>
+
+                    <p class="text-sm font-bold text-slate-800 mt-4 mb-1">
+                        CETTE MISE EN SITUATION N'EST PAS UN EXAMEN INDIVIDUEL.
+                    </p>
+
+                    <p class="text-sm text-slate-600 mb-4">
+                        L'objectif institutionnel est de tester l'efficacité réelle du dispositif d'urgence vitale dans chaque unité.
+                    </p>
+
+                    <div class="bg-blue-50 border-l-4 border-blue-600 p-3 rounded-r-lg text-xs font-semibold text-blue-900">
+                        RECONNAÎTRE → ALERTER → MOBILISER → AGIR → TRANSMETTRE → AMÉLIORER
+                    </div>
+                </div>
+
+                <!-- 2. Identification -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-800 border-b pb-2 mb-4">2. Identification</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Champ Fonction -->
+                        <div>
+                            <label for="select-fonction" class="block text-sm font-medium text-slate-700 mb-1">Fonction <span class="text-rose-500">*</span> :</label>
+                            <select id="select-fonction" onchange="toggleAutreFonction()" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm bg-white">
+                                <option value="">-- Sélectionner une fonction --</option>
+                                <option value="Cadre de santé">Cadre de santé</option>
+                                <option value="Référent UVIH">Référent UVIH</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+
+                        <!-- Champ Préciser si "Autre" -->
+                        <div id="box-autre-fonction" class="hidden">
+                            <label for="input-autre-fonction" class="block text-sm font-medium text-slate-700 mb-1">Préciser la fonction <span class="text-rose-500">*</span> :</label>
+                            <input type="text" id="input-autre-fonction" placeholder="Ex: Formateur, Médecin..." class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                        
+                        <!-- Champ Unique Service -->
+                        <div class="md:col-span-2">
+                            <label for="input-service" class="block text-sm font-medium text-slate-700 mb-1">Quel est votre service ? <span class="text-rose-500">*</span> :</label>
+                            <input type="text" id="input-service" required placeholder="Ex: Urgences" oninput="mettreAJourNomService(this.value)" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+
+                        <!-- Champ Unique Nom et Prénom -->
+                        <div class="md:col-span-2">
+                            <label for="input-nom-prenom" class="block text-sm font-medium text-slate-700 mb-1">Nom et Prénom <span class="text-rose-500">*</span> :</label>
+                            <input type="text" id="input-nom-prenom" required placeholder="Ex: DUPONT Jean" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+
+                        <!-- Champ Date d'exercice -->
+                        <div class="md:col-span-2">
+                            <label for="input-date" class="block text-sm font-medium text-slate-700 mb-1">Date de l'exercice <span class="text-rose-500">*</span> :</label>
+                            <input type="date" id="input-date" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Participants -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-800 border-b pb-2 mb-4">3. Participants <span class="text-rose-500">*</span></h2>
+                    
+                    <div id="liste-participants" class="space-y-4">
+                        <div class="participant-item grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-100 pb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Fonction <span class="text-rose-500">*</span> :</label>
+                                <select onchange="toggleAutreFonctionParticipant(this)" class="select-fonction-participant w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm bg-white">
+                                    <option value="">-- Sélectionner une fonction --</option>
+                                    <option value="ASH">ASH</option>
+                                    <option value="AS">AS</option>
+                                    <option value="IDE">IDE</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
+
+                            <div class="box-autre-participant hidden">
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Préciser la fonction <span class="text-rose-500">*</span> :</label>
+                                <input type="text" placeholder="Ex: Formateur, Médecin..." class="input-autre-participant w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Nom et Prénom <span class="text-rose-500">*</span> :</label>
+                                <input type="text" placeholder="Ex: DUPONT Jean" class="input-nom-participant w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="ajouterParticipant()" class="mt-4 flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition">
+                        <span class="flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full text-blue-600 font-bold text-base">+</span>
+                        <span>Ajouter un autre participant</span>
+                    </button>
+                </div>
+
+                <!-- Navigation Bas ONGLET 1 -->
+                <div class="flex justify-end pt-2">
+                    <button onclick="switchTab('tab2')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center gap-2">
+                        <span>Soumettre et passer à l'étape suivante</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ONGLET 2 -->
+            <section id="tab2" class="hidden space-y-6">
+                <div id="sec-choix-service" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-800 border-b pb-2 mb-4">Choix de l'Unité / Service <span class="text-rose-500">*</span></h2>
+                    
+                    <p class="text-sm text-slate-600 mb-4">Sélectionnez le secteur d'activité pour adapter le scénario :</p>
+
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                        <button onclick="selectService(event, 'Médecine', 'Patient hospitalisé dans sa chambre.')" class="service-btn text-left p-3 rounded-lg border hover:border-emerald-500 hover:bg-emerald-50 transition">
+                            <div class="font-bold text-slate-800">Médecine</div>
+                            <div class="text-xs text-slate-500">Chambre du patient</div>
+                        </button>
+                        <button onclick="selectService(event, 'Chirurgie', 'Patient à J1 d\'une intervention.')" class="service-btn text-left p-3 rounded-lg border hover:border-emerald-500 hover:bg-emerald-50 transition">
+                            <div class="font-bold text-slate-800">Chirurgie</div>
+                            <div class="text-xs text-slate-500">Post-opératoire (J1)</div>
+                        </button>
+                        <button onclick="selectService(event, 'SSR / SMR', 'Patient en chambre ou lors d\'une activité.')" class="service-btn text-left p-3 rounded-lg border hover:border-emerald-500 hover:bg-emerald-50 transition">
+                            <div class="font-bold text-slate-800">SSR / SMR</div>
+                            <div class="text-xs text-slate-500">Chambre ou activité</div>
+                        </button>
+                        <button onclick="selectService(event, 'Imagerie', 'Patient installé pour un examen.')" class="service-btn text-left p-3 rounded-lg border hover:border-emerald-500 hover:bg-emerald-50 transition">
+                            <div class="font-bold text-slate-800">Imagerie</div>
+                            <div class="text-xs text-slate-500">Salle d'examen</div>
+                        </button>
+                        <button onclick="selectService(event, 'Hôpital de jour', 'Patient installé dans l\'espace de soins.')" class="service-btn text-left p-3 rounded-lg border hover:border-emerald-500 hover:bg-emerald-50 transition">
+                            <div class="font-bold text-slate-800">Hôpital de jour</div>
+                            <div class="text-xs text-slate-500">Espace de soins</div>
+                        </button>
+                        <button onclick="selectService(event, 'Consultation', 'Patient présent dans la salle d\'attente ou de consultation.')" class="service-btn text-left p-3 rounded-lg border hover:border-emerald-500 hover:bg-emerald-50 transition">
+                            <div class="font-bold text-slate-800">Consultation</div>
+                            <div class="text-xs text-slate-500">Salle d'attente/soin</div>
+                        </button>
+                    </div>
+
+                    <div class="space-y-1 pt-2 border-t border-slate-100">
+                        <p class="text-sm text-slate-600">L'objectif n'est pas d'évaluer la spécialité médicale du secteur.</p>
+                        <p class="text-sm font-medium text-slate-700">L'objectif est d'évaluer la capacité de l'unité à faire face à une urgence vitale.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-800 border-b pb-2 mb-3">Consigne aux professionnels (À lire)</h2>
+                    <blockquote class="bg-slate-50 p-4 rounded-lg border-l-4 border-amber-500 italic text-sm text-slate-700">
+                        « Vous êtes dans votre situation habituelle de travail. Un patient pris en charge dans votre unité présente soudainement un malaise. Vous devez agir comme vous le feriez en situation réelle. Il s'agit d'une mise en situation : aucun médicament réel et aucun geste invasif réel ne doivent être réalisés. »
+                    </blockquote>
+                    <div id="service-context-box" class="mt-4 p-3 bg-emerald-50 text-emerald-800 rounded-lg text-sm hidden">
+                        <strong>Contexte adapté au service :</strong> <span id="service-context-text"></span>
+                    </div>
+                </div>
+
+                <!-- BLOC BOUTON ÊTES-VOUS PRÊT ET CHRONOMÈTRE -->
+                <div class="flex flex-col items-center justify-center my-6 py-4 bg-white rounded-xl shadow-sm border border-slate-200">
+                    <button id="btn-start-timer" onclick="lancerLancement()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-lg py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform active:scale-95 transition flex items-center gap-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span id="btn-timer-text">Êtes-vous prêt ?</span>
+                    </button>
+                    <p id="timer-status-hint" class="text-xs text-slate-400 mt-2">Cliquez pour déclencher le décompte avant le lancement du chrono.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-800 border-b pb-2 mb-3">Fiche de l'Observateur</h2>
+                    <p class="text-sm text-slate-600 mb-4">Ne donner ces informations que si l'équipe réalise l'évaluation :</p>
+                    <p class="text-sm text-slate-600 mb-4">L'équipe doit reconnaître l'arrêt cardiaque et mettre en œuvre la conduite institutionnelle.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-slate-50 rounded-lg border">
+                            <h4 class="font-bold text-slate-700 text-sm">Si les professionnels évaluent la conscience :</h4>
+                            <p class="text-xs text-rose-600 font-semibold mt-1">« Le patient ne répond pas. »</p>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-lg border">
+                            <h4 class="font-bold text-slate-700 text-sm">Si les professionnels évaluent la respiration :</h4>
+                            <p class="text-xs text-rose-600 font-semibold mt-1">« La respiration n'est pas normale (le comédien retient sa respiration). »</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Bas ONGLET 2 -->
+                <div class="flex justify-between items-center pt-2">
+                    <button onclick="switchTab('tab1')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-5 rounded-lg transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        <span>Précédent</span>
+                    </button>
+                    <button onclick="switchTab('tab3')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center gap-2">
+                        <span>Passer à la grille d'observation</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ONGLET 3 -->
+            <section id="tab3" class="hidden space-y-6">
+                <!-- 6. CE QUE L'ON OBSERVE -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-900 border-b pb-3 mb-6">CE QUE L'ON OBSERVE (Cette grille ne constitue pas une cotation HAS)</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- SOUS-TITRE A -->
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-3">A. Reconnaissance</h3>
+                            <div class="space-y-3 pl-1">
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Situation identifiée comme urgence vitale">
+                                    <span>Situation identifiée comme urgence vitale</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Conscience évaluée">
+                                    <span>Conscience évaluée</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Respiration évaluée">
+                                    <span>Respiration évaluée (libération des voies aériennes, bascule prudente de la tête en arrière, évaluation de la respiration durant 10 secondes)</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Arrêt cardiaque reconnu">
+                                    <span>Arrêt cardiaque reconnu</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- SOUS-TITRE B -->
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="text-lg font-bold text-slate-900 mb-3">B. Alerte</h3>
+                            <div class="space-y-3 pl-1">
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Numéro d'urgence connu (15)">
+                                    <span>Numéro d'urgence connu (15)</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Alerte déclenchée rapidement">
+                                    <span>Alerte déclenchée rapidement : l’équipe ne perd pas de temps à déclencher les secours</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Localisation précise donnée">
+                                    <span>Localisation précise donnée : bâtiment, étage, hall, chambre, lieu précis…</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Situation décrite">
+                                    <span>Situation décrite : retrouvé au sol, en arrêt</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="État du patient transmis">
+                                    <span>État du patient transmis</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- SOUS-TITRE C -->
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="text-lg font-bold text-slate-900 mb-3">C. Matériel</h3>
+                            <div class="space-y-3 pl-1">
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Chariot/sac d'urgence localisé rapidement">
+                                    <span>Chariot/sac d'urgence localisé rapidement</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Matériel accessible">
+                                    <span>Matériel accessible</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="DAE/défibrillateur identifié">
+                                    <span>DAE/défibrillateur identifié</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Matériel amené auprès du patient rapidement">
+                                    <span>Matériel amené auprès du patient rapidement</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- SOUS-TITRE D -->
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="text-lg font-bold text-slate-900 mb-3">D. Organisation</h3>
+                            <div class="space-y-3 pl-1">
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Renfort demandé">
+                                    <span>Renfort demandé</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Rôles répartis">
+                                    <span>Rôles répartis</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Communication entre professionnels">
+                                    <span>Communication entre professionnels</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Renfort accueilli">
+                                    <span>Renfort accueilli</span>
+                                </label>   
+                            </div>
+                        </div>
+
+                        <!-- SOUS-TITRE E -->
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="text-lg font-bold text-slate-900 mb-3">E. Prise en charge</h3>
+                            <div class="space-y-3 pl-1">
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Premiers gestes verbalisés adaptés aux compétences des professionnels">
+                                    <span>Premiers gestes verbalisés adaptés aux compétences des professionnels</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Prise en charge poursuivie jusqu'au relais">
+                                    <span>Prise en charge poursuivie jusqu'au relais</span>
+                                </label>  
+                            </div>
+                        </div>
+
+                        <!-- SOUS-TITRE F -->
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="text-lg font-bold text-slate-900 mb-3">F. Transmission</h3>
+                            <div class="space-y-3 pl-1">
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Circonstances">
+                                    <span>Circonstances</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Heure de découverte">
+                                    <span>Heure de découverte</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Évolution transmise">
+                                    <span>Évolution, depuis combien de temps ?</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer text-slate-600 text-base">
+                                    <input type="checkbox" class="obs-item w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="Gestes réalisés">
+                                    <span>Gestes réalisés</span>
+                                </label>  
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Bas ONGLET 3 -->
+                <div class="flex justify-between items-center pt-2">
+                    <button onclick="switchTab('tab2')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-5 rounded-lg transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        <span>Précédent</span>
+                    </button>
+                    <button onclick="switchTab('tab4')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center gap-2">
+                        <span>Passer au RETEX</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ONGLET 4 -->
+            <section id="tab4" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-800 border-b pb-2 mb-4">Retour d'expérience (RETEX — 5 MIN)</h2>
+                    <div class="space-y-6 text-sm">
+                        
+                        <div>
+                            <h3 class="text-base font-bold text-slate-700 mb-1">Situation</h3>
+                            <label class="font-bold text-slate-700">Comment avez-vous vécu la situation ? <span class="text-rose-500">*</span></label>
+                            <textarea id="retex-q1" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500" rows="2"></textarea>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="text-base font-bold text-slate-700 mb-1">Fonctionnement</h3>
+                            <label class="font-bold text-slate-700">Qu'est-ce qui a bien fonctionné ? <span class="text-rose-500">*</span></label>
+                            <textarea id="retex-q2" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500" rows="2"></textarea>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="text-base font-bold text-slate-700 mb-1">Difficultés</h3>
+                            <label class="font-bold text-slate-700">Qu'est-ce qui vous a posé problème ? <span class="text-rose-500">*</span></label>
+                            <textarea id="retex-q3" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500" rows="2"></textarea>
+                        </div>
+
+                        <div id="block-retex-q4" class="pt-4 border-t border-slate-100">
+                            <h3 class="text-base font-bold text-slate-700 mb-1">Alerte</h3>
+                            <p class="font-bold text-slate-700 mb-2">Le numéro d'urgence était-il connu et facilement accessible ? <span class="text-rose-500">*</span></p>
+                            <div class="flex items-center gap-6 mb-2">
+                                <label class="flex items-center gap-2 cursor-pointer font-medium">
+                                    <input type="radio" name="retex_q4" value="Oui" onclick="toggleRetexText('text-q4', false)" class="w-4 h-4 text-blue-600">
+                                    Oui
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer font-medium">
+                                    <input type="radio" name="retex_q4" value="Non" onclick="toggleRetexText('text-q4', true)" class="w-4 h-4 text-blue-600">
+                                    Non
+                                </label>
+                            </div>
+                            <div id="text-q4" class="hidden">
+                                <label class="block text-xs text-slate-500 mb-1">Précisez pourquoi <span class="text-rose-500">*</span> :</label>
+                                <textarea id="input-text-q4" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows="2" placeholder="Expliquez la difficulté rencontrée..."></textarea>
+                            </div>
+                        </div>
+
+                        <div id="block-retex-q5" class="pt-4 border-t border-slate-100">
+                            <h3 class="text-base font-bold text-slate-700 mb-1">Matériel</h3>
+                            <p class="font-bold text-slate-700 mb-2">Avez-vous trouvé rapidement le chariot/sac d'urgence et le DAE ? <span class="text-rose-500">*</span></p>
+                            <div class="flex items-center gap-6 mb-2">
+                                <label class="flex items-center gap-2 cursor-pointer font-medium">
+                                    <input type="radio" name="retex_q5" value="Oui" onclick="toggleRetexText('text-q5', false)" class="w-4 h-4 text-blue-600">
+                                    Oui
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer font-medium">
+                                    <input type="radio" name="retex_q5" value="Non" onclick="toggleRetexText('text-q5', true)" class="w-4 h-4 text-blue-600">
+                                    Non
+                                </label>
+                            </div>
+                            <div id="text-q5" class="hidden">
+                                <label class="block text-xs text-slate-500 mb-1">Précisez pourquoi <span class="text-rose-500">*</span> :</label>
+                                <textarea id="input-text-q5" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows="2" placeholder="Expliquez le problème rencontré avec le matériel..."></textarea>
+                            </div>
+                        </div>
+
+                        <div id="block-retex-q6" class="pt-4 border-t border-slate-100">
+                            <h3 class="text-base font-bold text-slate-700 mb-1">Organisation</h3>
+                            <p class="font-bold text-slate-700 mb-2">Les rôles étaient-ils clairs ? <span class="text-rose-500">*</span></p>
+                            <div class="flex items-center gap-6 mb-2">
+                                <label class="flex items-center gap-2 cursor-pointer font-medium">
+                                    <input type="radio" name="retex_q6" value="Oui" onclick="toggleRetexText('text-q6', false)" class="w-4 h-4 text-blue-600">
+                                    Oui
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer font-medium">
+                                    <input type="radio" name="retex_q6" value="Non" onclick="toggleRetexText('text-q6', true)" class="w-4 h-4 text-blue-600">
+                                    Non
+                                </label>
+                            </div>
+                            <div id="text-q6" class="hidden">
+                                <label class="block text-xs text-slate-500 mb-1">Précisez pourquoi <span class="text-rose-500">*</span> :</label>
+                                <textarea id="input-text-q6" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows="2" placeholder="Expliquez le manque de clarté dans l'organisation..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="text-base font-bold text-slate-700 mb-1">Améliorations</h3>
+                            <label class="font-bold text-slate-700">Que devons-nous améliorer avant qu'une situation réelle survienne ? <span class="text-rose-500">*</span></label>
+                            <textarea id="retex-q7" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500" rows="2"></textarea>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Navigation Bas ONGLET 4 -->
+                <div class="flex justify-between items-center pt-2">
+                    <button onclick="switchTab('tab3')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-5 rounded-lg transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        <span>Précédent</span>
+                    </button>
+                    <button onclick="switchTab('tab5')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center gap-2">
+                        <span>Passer à la synthèse</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ONGLET 5 -->
+            <section id="tab5" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+                    <h2 class="text-lg font-bold text-slate-800 border-b pb-2">Fiche de Synthèse et plan d'action</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="font-bold text-xs uppercase text-slate-500 block mb-1">Ce qui fonctionne bien <span class="text-rose-500">*</span> :</label>
+                            <input type="text" id="syn-fonctionne" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="font-bold text-xs uppercase text-slate-500 block mb-1">Principal écart identifié <span class="text-rose-500">*</span> :</label>
+                            <input type="text" id="syn-ecart" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="font-bold text-xs uppercase text-slate-500">Cause probable de l'écart identifié <span class="text-rose-500">*</span> :</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                            <label class="flex items-center gap-2 border p-2 rounded cursor-pointer"><input type="checkbox" name="cause_ecart" value="Connaissance" onchange="validerGroupesCheckboxTab5()"> Connaissance</label>
+                            <label class="flex items-center gap-2 border p-2 rounded cursor-pointer"><input type="checkbox" name="cause_ecart" value="Organisation" onchange="validerGroupesCheckboxTab5()"> Organisation</label>
+                            <label class="flex items-center gap-2 border p-2 rounded cursor-pointer"><input type="checkbox" name="cause_ecart" value="Matériel" onchange="validerGroupesCheckboxTab5()"> Matériel</label>
+                            <label class="flex items-center gap-2 border p-2 rounded cursor-pointer"><input type="checkbox" name="cause_ecart" value="Alerte" onchange="validerGroupesCheckboxTab5()"> Alerte</label>
+                            <label class="flex items-center gap-2 border p-2 rounded cursor-pointer"><input type="checkbox" name="cause_ecart" value="Communication" onchange="validerGroupesCheckboxTab5()"> Communication</label>
+                            <label class="flex items-center gap-2 border p-2 rounded cursor-pointer"><input type="checkbox" name="cause_ecart" value="Formation" onchange="validerGroupesCheckboxTab5()"> Formation</label>
+                            <label class="flex items-center gap-2 border p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="check-autre-cause" name="cause_ecart" value="Autre" onchange="toggleAutreCause(); validerGroupesCheckboxTab5()"> Autre
+                            </label>
+                        </div>
+
+                        <div id="box-autre-cause" class="hidden mt-3">
+                            <label for="input-autre-cause" class="block text-sm font-medium text-slate-700 mb-1">Préciser la cause <span class="text-rose-500">*</span> :</label>
+                            <input type="text" id="input-autre-cause" placeholder="Ex: Problème d'effectif, travaux..." class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                        <div>
+                            <label class="font-bold text-sm text-slate-700">Action corrective <span class="text-rose-500">*</span> :</label>
+                            <input type="text" id="syn-action" required class="w-full p-2 border border-slate-300 rounded-lg mt-1 focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="font-bold text-sm text-slate-700">Responsable & Échéance <span class="text-rose-500">*</span> :</label>
+                            <input type="text" id="syn-responsable" required class="w-full p-2 border border-slate-300 rounded-lg mt-1 focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="font-bold text-sm text-slate-700">Comment vérifier l'efficacité? <span class="text-rose-500">*</span></label>
+                            <input type="text" id="syn-verification" required class="w-full p-2 border border-slate-300 rounded-lg mt-1 focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="font-bold text-sm text-slate-700">Date de réévaluation <span class="text-rose-500">*</span></label>
+                            <input type="date" id="input-date-reeval" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div id="reevaluation-main-section">
+                        <h2 class="text-lg font-bold text-slate-800 border-b pb-2">La réévaluation, élément essentiel</h2>
+                        <p class="text-sm italic text-slate-500 mt-2 mb-4">La mise en situation ne s’arrête pas au constat.</p>
+                        
+                        <div class="flex justify-center my-4">
+                            <button type="button" onclick="togglePageExemple()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-lg shadow transition">
+                                Exemple de réévaluation
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="page-exemple" class="hidden pt-4 border-t border-slate-100">
+                        <h3 class="text-md font-bold text-slate-800 mb-3">Exemple de réévaluation</h3>
+
+                        <div class="space-y-3 text-sm text-slate-700">
+                            <p><strong>Constat :</strong> numéro d'urgence non connu.</p>
+                            <p><strong>Action :</strong> rappel et affichage.</p>
+                            <p><strong>Réévaluation :</strong> demander à plusieurs professionnels de donner spontanément le numéro.</p>
+
+                            <div>
+                                <strong>Résultat :</strong>
+                                <ul class="list-none space-y-1.5 mt-2 pl-2">
+                                    <li class="flex items-center gap-2">
+                                        <input type="checkbox" id="ex-efficace" class="w-4 h-4 text-blue-600 rounded">
+                                        <label for="ex-efficace" class="cursor-pointer">Efficace</label>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <input type="checkbox" id="ex-partiel" class="w-4 h-4 text-blue-600 rounded">
+                                        <label for="ex-partiel" class="cursor-pointer">Partiellement efficace</label>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <input type="checkbox" id="ex-non-efficace" class="w-4 h-4 text-blue-600 rounded">
+                                        <label for="ex-non-efficace" class="cursor-pointer">Non efficace</label>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-2">
+                            <button type="button" onclick="masquerPageExemple()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
+                                ← Fermer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Bas ONGLET 5 -->
+                <div class="flex justify-between items-center pt-2">
+                    <button onclick="switchTab('tab4')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-5 rounded-lg transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        <span>Précédent</span>
+                    </button>
+                    <button onclick="switchTab('tab6')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center gap-2">
+                        <span>Voir le mémo final</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ONGLET 6 -->
+            <section id="tab6" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-900 border-b pb-3 mb-6">Message à retenir</h2>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-3">Pour le professionnel</h3>
+                            <div class="space-y-3 pl-1 text-slate-600 text-sm">
+                                <p class="flex items-center gap-2"><span>•</span> <span>Je sais reconnaître</span></p>
+                                <p class="flex items-center gap-2"><span>•</span> <span>Je sais alerter</span></p>
+                                <p class="flex items-center gap-2"><span>•</span> <span>Je sais où trouver le matériel</span></p>
+                                <p class="flex items-center gap-2"><span>•</span> <span>Je sais quoi faire en attendant le renfort</span></p>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="text-lg font-bold text-slate-900 mb-3">Pour le cadre</h3>
+                            <div class="space-y-3 pl-1 text-slate-600 text-sm">
+                                <p class="flex items-center gap-2"><span>•</span> <span>Je réalise une première mise en situation. J'identifie les difficultés rencontrées face à cette UVIH</span></p>
+                                <p class="flex items-center gap-2"><span>•</span> <span>Je propose des axes d'amélioration</span></p>
+                                <p class="flex items-center gap-2"><span>•</span> <span>Je réévalue</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-800 border-b pb-2 mb-3">Reconnaître un arrêt cardiaque</h2>
+                    <ul class="list-disc pl-8 text-sm text-slate-600 space-y-1 mb-4">
+                        <li>Vérifier la réponse : stimuler et appeler le patient → Absence de réponse</li>
+                        <li>Évaluer la respiration : rechercher une respiration normale → absence de respiration normale (ou respiration agonique/gasp)</li>
+                        <li>Ne pas perdre de temps à rechercher le pouls si le professionnel n'est pas spécifiquement formé à cette évaluation</li>
+                        <li>Conclure à l'ACR devant l'association inconscience + absence de respiration normale</li>
+                        <li>Déclencher immédiatement l'alerte, demander le renfort et le DAE/défibrillateur, puis débuter la RCP sans délai selon les procédures institutionnelles</li>
+                    </ul>
+                </div>
+
+                <div class="bg-emerald-600 text-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-bold mb-2">À RETENIR</h2>
+                    <p class="text-sm text-emerald-100 mb-4">INCONSCIENT + NE RESPIRE PAS NORMALEMENT = SUSPECTER UN ACR</p>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-center text-slate-900 font-bold">
+                        <div class="bg-white p-4 rounded-lg shadow">1. RECONNAÎTRE</div>
+                        <div class="bg-white p-4 rounded-lg shadow">2. ALERTER (15)</div>
+                        <div class="bg-white p-4 rounded-lg shadow">3. RCP</div>
+                        <div class="bg-white p-4 rounded-lg shadow">4. DAE</div>
+                    </div>
+                </div>
+
+                <!-- Navigation Onglet 6 -->
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-200">
+                    <button type="button" onclick="switchTab('tab5')" class="w-full sm:w-auto bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-5 rounded-lg transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        <span>Précédent</span>
+                    </button>
+
+                    <button type="button" id="submitBtn" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg cursor-pointer transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span>Soumettre les réponses</span>
+                    </button>
+                </div>
+
+            </section>
+        </main>
+
+        <footer class="mt-auto py-8 text-center text-slate-500 text-xs flex flex-col items-center justify-center gap-2">
+            <div class="credit-block">
+                <span class="credit-title block font-semibold text-slate-600">Création &amp; Conception</span>
+                <span class="credit-name">A.Andrieu</span>
+            </div>
+            <div class="credit-block">
+                <span class="credit-title block font-semibold text-slate-600">En collaboration avec</span>
+                <span class="credit-name">E.Jullian</span>
+            </div>
+            <img src="logo-coremotion.png" alt="Logo" class="h-20 my-4 object-contain">
+            <div class="footer-copyright">© 2026 Tous droits réservés.</div>
+            <div class="footer-version text-slate-400">Version 1.0.1</div>
+        </footer>
+
+    </div>
+
+    <!-- BOUTONS FLOTTANTS -->
+    <div class="fixed top-32 right-6 z-40 flex flex-col gap-2">
+        <button 
+          id="btn-grille-rapide"
+          onclick="document.getElementById('modal-grille').classList.remove('hidden')"
+          class="hidden flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl shadow-lg transition-all font-medium text-sm cursor-pointer">
+          📋 <span>Grille rapide</span>
+        </button>
+
+        <button 
+          id="btn-memo-cadre"
+          onclick="document.getElementById('modal-memo-cadre').classList.remove('hidden')"
+          class="hidden flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl shadow-lg transition-all font-medium text-sm cursor-pointer">
+          📌 <span>Mémo Cadre</span>
+        </button>
+    </div>
+
+    <!-- MODALE MÉMO CADRE -->
+    <div id="modal-memo-cadre" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+        
+        <div class="flex justify-between items-center p-6 border-b border-slate-100">
+          <h3 class="font-bold text-lg text-slate-800">Rôle du Cadre / Référent UVIH</h3>
+          <button 
+            onclick="document.getElementById('modal-memo-cadre').classList.add('hidden')"
+            class="text-slate-400 hover:text-slate-600 text-xl font-bold p-1 cursor-pointer">
+            ✕
+          </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto space-y-6">
+            <div>
+                <h3 class="text-sm font-bold text-blue-700 uppercase tracking-wide mb-2">A. Avant l'exercice</h3>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center gap-3 p-1.5 rounded hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" class="w-5 h-5 text-emerald-600 rounded">
+                        <span class="text-sm text-slate-700">Je connais le numéro d'urgence vitale</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-1.5 rounded hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" class="w-5 h-5 text-emerald-600 rounded">
+                        <span class="text-sm text-slate-700">Je connais la procédure d'alerte</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-1.5 rounded hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" class="w-5 h-5 text-emerald-600 rounded">
+                        <span class="text-sm text-slate-700">Je connais la localisation du chariot/sac d'urgence</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-1.5 rounded hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" class="w-5 h-5 text-emerald-600 rounded">
+                        <span class="text-sm text-slate-700">Je connais la localisation du DAE/Défibrillateur</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100">
+                <h3 class="text-sm font-bold text-amber-700 uppercase tracking-wide mb-2">B. Pendant l'exercice</h3>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center gap-3 p-1.5 rounded hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" class="w-5 h-5 text-emerald-600 rounded">
+                        <span class="text-sm text-slate-700">Je laisse agir l'équipe, sans aide</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-1.5 rounded hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" class="w-5 h-5 text-emerald-600 rounded">
+                        <span class="text-sm text-slate-700">J'observe et note les difficultés</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100">
+                <h3 class="text-sm font-bold text-emerald-700 uppercase tracking-wide mb-2">C. Après l'exercice</h3>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center gap-3 p-1.5 rounded hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" class="w-5 h-5 text-emerald-600 rounded">
+                        <span class="text-sm text-slate-700">Je réalise un RETEX</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+          <button 
+            onclick="document.getElementById('modal-memo-cadre').classList.add('hidden')"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg cursor-pointer">
+            Fermer
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MODALE GRILLE D'ÉVALUATION RAPIDE -->
+    <div id="modal-grille" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+        
+        <div class="flex justify-between items-center p-6 border-b border-slate-100">
+          <h3 class="font-bold text-lg text-slate-800">Grille d'Observation & Évaluation Rapide</h3>
+          <button 
+            onclick="document.getElementById('modal-grille').classList.add('hidden')"
+            class="text-slate-400 hover:text-slate-600 text-xl font-bold p-1 cursor-pointer">
+            ✕
+          </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="bg-slate-100 border-b">
+                  <th class="p-3">Élément Évalué</th>
+                  <th class="p-3 text-center">Acquis</th>
+                  <th class="p-3 text-center">Partiel</th>
+                  <th class="p-3 text-center">Non Acquis</th>
+                  <th class="p-3 text-center">NE</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y">
+                <tr class="hover:bg-slate-50">
+                  <td class="p-3 font-medium">Numéro d'urgence connu (15)</td>
+                  <td class="text-center"><input type="radio" name="eval_q1" value="acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q1" value="partiel"></td>
+                  <td class="text-center"><input type="radio" name="eval_q1" value="non-acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q1" value="ne"></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-3 font-medium">Alerte efficace</td>
+                  <td class="text-center"><input type="radio" name="eval_q2" value="acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q2" value="partiel"></td>
+                  <td class="text-center"><input type="radio" name="eval_q2" value="non-acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q2" value="ne"></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-3 font-medium">Localisation précise</td>
+                  <td class="text-center"><input type="radio" name="eval_q3" value="acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q3" value="partiel"></td>
+                  <td class="text-center"><input type="radio" name="eval_q3" value="non-acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q3" value="ne"></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-3 font-medium">Chariot/Sac accessible</td>
+                  <td class="text-center"><input type="radio" name="eval_q4" value="acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q4" value="partiel"></td>
+                  <td class="text-center"><input type="radio" name="eval_q4" value="non-acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q4" value="ne"></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-3 font-medium">DAE identifié</td>
+                  <td class="text-center"><input type="radio" name="eval_q5" value="acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q5" value="partiel"></td>
+                  <td class="text-center"><input type="radio" name="eval_q5" value="non-acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q5" value="ne"></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-3 font-medium">Premiers gestes adaptés</td>
+                  <td class="text-center"><input type="radio" name="eval_q6" value="acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q6" value="partiel"></td>
+                  <td class="text-center"><input type="radio" name="eval_q6" value="non-acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q6" value="ne"></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-3 font-medium">Rôles répartis</td>
+                  <td class="text-center"><input type="radio" name="eval_q7" value="acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q7" value="partiel"></td>
+                  <td class="text-center"><input type="radio" name="eval_q7" value="non-acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q7" value="ne"></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-3 font-medium">Transmissions au renfort</td>
+                  <td class="text-center"><input type="radio" name="eval_q8" value="acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q8" value="partiel"></td>
+                  <td class="text-center"><input type="radio" name="eval_q8" value="non-acquis"></td>
+                  <td class="text-center"><input type="radio" name="eval_q8" value="ne"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+          <button 
+            onclick="document.getElementById('modal-grille').classList.add('hidden')"
+            class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium text-sm rounded-lg cursor-pointer">
+            Fermer
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+    let timerInterval = null;
+    let countdownInterval = null;
+    let secondsElapsed = 0;
+    let isTimerRunning = false;
+    let selectedService = "";
+
+    function mettreAJourNomService(valeur) {
+        const label = document.getElementById('active-service-label');
+        if (label) {
+            label.textContent = valeur.trim() !== "" ? valeur : (selectedService || "Non sélectionnée");
+        }
+    }
+
+    function validerGroupesCheckboxTab5() {
+        const checkboxes = document.querySelectorAll('#tab5 input[name="cause_ecart"]');
+        const hasChecked = Array.from(checkboxes).some(cb => cb.checked);
+        checkboxes.forEach(cb => {
+            cb.required = !hasChecked;
+        });
+    }
+
+    function lancerLancement() {
+        const btn = document.getElementById('btn-start-timer');
+        const btnText = document.getElementById('btn-timer-text');
+        const hint = document.getElementById('timer-status-hint');
+
+        if (isTimerRunning) {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            secondsElapsed = 0;
+            document.getElementById('header-timer').textContent = "00:00:00";
+            btnText.textContent = "Êtes-vous prêt ?";
+            btn.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-lg py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform active:scale-95 transition flex items-center gap-3";
+            hint.textContent = "Cliquez pour déclencher le décompte de 5 secondes avant le lancement du chrono.";
+            return;
+        }
+
+        btn.disabled = true;
+        let countdown = 5;
+        btnText.textContent = `Lancement dans ${countdown}...`;
+        btn.className = "bg-amber-500 text-white font-extrabold text-lg py-4 px-8 rounded-xl shadow-lg cursor-wait flex items-center gap-3";
+
+        countdownInterval = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                btnText.textContent = `Lancement dans ${countdown}...`;
+            } else {
+                clearInterval(countdownInterval);
+                btn.disabled = false;
+                demarrerChrono();
+            }
+        }, 1000);
+    }
+
+    function demarrerChrono() {
+        isTimerRunning = true;
+        const btn = document.getElementById('btn-start-timer');
+        const btnText = document.getElementById('btn-timer-text');
+        const hint = document.getElementById('timer-status-hint');
+
+        btnText.textContent = "Chrono en cours... (Réinitialiser)";
+        btn.className = "bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-lg py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform active:scale-95 transition flex items-center gap-3";
+        hint.textContent = "Le chronomètre a démarré en haut à droite. Cliquez à nouveau pour réinitialiser.";
+
+        const startTime = Date.now() - (secondsElapsed * 1000);
+
+        timerInterval = setInterval(() => {
+            secondsElapsed = Math.floor((Date.now() - startTime) / 1000);
+            
+            const hrs = Math.floor(secondsElapsed / 3600).toString().padStart(2, '0');
+            const mins = Math.floor((secondsElapsed % 3600) / 60).toString().padStart(2, '0');
+            const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+
+            document.getElementById('header-timer').textContent = `${hrs}:${mins}:${secs}`;
+        }, 1000);
+    }
+
+    function accepterConditions() {
+        const chk = document.getElementById('chk-terms');
+        const btn = document.getElementById('btn-access');
+        btn.disabled = !chk.checked;
+    }
+
+    function validerAvertissement() {
+        const pop = document.getElementById('pop-avertissement');
+        const welcome = document.getElementById('page-bienvenue');
+
+        pop.classList.add('fade-out');
+
+        setTimeout(() => {
+            pop.classList.add('hidden');
+
+            setTimeout(() => {
+                welcome.classList.add('fade-out');
+                setTimeout(() => {
+                    welcome.classList.add('hidden');
+                    document.getElementById('app-principal').classList.remove('hidden');
+                    switchTab('tab1');
+                }, 500);
+            }, 4000);
+        }, 500);
+    }
+
+    function forcerOnglet(tabId) {
+        ['tab1', 'tab2', 'tab3', 'tab4', 'tab5', 'tab6'].forEach(id => {
+            const el = document.getElementById(id);
+            const nav = document.getElementById('nav-' + id);
+            if (el) el.classList.add('hidden');
+            if (nav) nav.className = "px-4 py-3 border-b-2 border-transparent hover:text-blue-600 flex items-center gap-1.5";
+        });
+
+        const targetTab = document.getElementById(tabId);
+        const targetNav = document.getElementById('nav-' + tabId);
+
+        if (targetTab) targetTab.classList.remove('hidden');
+        if (targetNav) targetNav.className = "px-4 py-3 border-b-2 border-blue-600 text-blue-600 flex items-center gap-1.5 font-bold";
+
+        const btnGrille = document.getElementById('btn-grille-rapide');
+        if (btnGrille) {
+            if (tabId === 'tab3') btnGrille.classList.remove('hidden');
+            else btnGrille.classList.add('hidden');
+        }
+
+        const btnMemo = document.getElementById('btn-memo-cadre');
+        if (btnMemo) {
+            if (tabId === 'tab1' || tabId === 'tab2') {
+                btnMemo.classList.remove('hidden');
+            } else {
+                btnMemo.classList.add('hidden');
+            }
+        }
+    }
+
+    function switchTab(tabId) {
+        if (tabId !== 'tab1') {
+            const fonctionSelect = document.getElementById('select-fonction');
+            const autreFonctionInput = document.getElementById('input-autre-fonction');
+            const serviceInput = document.getElementById('input-service');
+            const nomPrenomInput = document.getElementById('input-nom-prenom');
+            const dateInput = document.getElementById('input-date');
+
+            if (!fonctionSelect || fonctionSelect.value === '') {
+                alert('Veuillez sélectionner une fonction.');
+                fonctionSelect.focus();
+                return;
+            }
+            if (fonctionSelect.value === 'Autre' && (!autreFonctionInput || autreFonctionInput.value.trim() === '')) {
+                alert('Veuillez préciser votre fonction.');
+                autreFonctionInput.focus();
+                return;
+            }
+            if (!serviceInput || serviceInput.value.trim() === '') {
+                alert('Veuillez indiquer votre service.');
+                serviceInput.focus();
+                return;
+            }
+            if (!nomPrenomInput || nomPrenomInput.value.trim() === '') {
+                alert('Veuillez remplir le champ "Nom et Prénom".');
+                nomPrenomInput.focus();
+                return;
+            }
+            if (!dateInput || dateInput.value === '') {
+                alert('Veuillez sélectionner la date.');
+                dateInput.focus();
+                return;
+            }
+
+            const participantItems = document.querySelectorAll('#liste-participants .participant-item');
+            for (let i = 0; i < participantItems.length; i++) {
+                const item = participantItems[i];
+                const selectFonction = item.querySelector('.select-fonction-participant');
+                const inputAutre = item.querySelector('.input-autre-participant');
+                const inputNom = item.querySelector('.input-nom-participant');
+
+                if (!selectFonction || selectFonction.value === '') {
+                    alert(`Veuillez sélectionner la fonction du participant n°${i + 1}.`);
+                    selectFonction.focus();
+                    return;
+                }
+                if (selectFonction.value === 'Autre' && (!inputAutre || inputAutre.value.trim() === '')) {
+                    alert(`Veuillez préciser la fonction du participant n°${i + 1}.`);
+                    inputAutre.focus();
+                    return;
+                }
+                if (!inputNom || inputNom.value.trim() === '') {
+                    alert(`Veuillez renseigner le nom et prénom du participant n°${i + 1}.`);
+                    inputNom.focus();
+                    return;
+                }
+            }
+        }
+
+        if (tabId !== 'tab1' && tabId !== 'tab2') {
+            if (!selectedService) {
+                alert("Veuillez sélectionner le secteur d'activité (Unité/Service) dans le scénario avant de poursuivre.");
+                forcerOnglet('tab2');
+                const boxService = document.getElementById('sec-choix-service');
+                if (boxService) {
+                    boxService.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    boxService.classList.add('ring-4', 'ring-rose-500');
+                    setTimeout(() => boxService.classList.remove('ring-4', 'ring-rose-500'), 3000);
+                }
+                return;
+            }
+        }
+
+        if (tabId === 'tab5' || tabId === 'tab6') {
+            const retexq1 = document.getElementById('retex-q1');
+            const retexq2 = document.getElementById('retex-q2');
+            const retexq3 = document.getElementById('retex-q3');
+            const retexq7 = document.getElementById('retex-q7');
+
+            if (!retexq1 || retexq1.value.trim() === '') {
+                alert('Veuillez remplir le champ "Comment avez-vous vécu la situation ?" dans le RETEX.');
+                forcerOnglet('tab4');
+                retexq1.focus();
+                return;
+            }
+            if (!retexq2 || retexq2.value.trim() === '') {
+                alert('Veuillez remplir le champ "Qu\'est-ce qui a bien fonctionné ?" dans le RETEX.');
+                forcerOnglet('tab4');
+                retexq2.focus();
+                return;
+            }
+            if (!retexq3 || retexq3.value.trim() === '') {
+                alert('Veuillez remplir le champ "Qu\'est-ce qui vous a posé problème ?" dans le RETEX.');
+                forcerOnglet('tab4');
+                retexq3.focus();
+                return;
+            }
+
+            const radioQ4 = document.querySelector('input[name="retex_q4"]:checked');
+            if (!radioQ4) {
+                alert('Veuillez répondre à la question de la rubrique "Alerte" dans le RETEX.');
+                forcerOnglet('tab4');
+                document.getElementById('block-retex-q4').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            if (radioQ4.value.toLowerCase() === 'non') {
+                const textQ4 = document.getElementById('input-text-q4');
+                if (!textQ4 || textQ4.value.trim() === '') {
+                    alert('Veuillez préciser pourquoi pour la rubrique "Alerte".');
+                    forcerOnglet('tab4');
+                    textQ4.focus();
+                    return;
+                }
+            }
+
+            const radioQ5 = document.querySelector('input[name="retex_q5"]:checked');
+            if (!radioQ5) {
+                alert('Veuillez répondre à la question de la rubrique "Matériel" dans le RETEX.');
+                forcerOnglet('tab4');
+                document.getElementById('block-retex-q5').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            if (radioQ5.value.toLowerCase() === 'non') {
+                const textQ5 = document.getElementById('input-text-q5');
+                if (!textQ5 || textQ5.value.trim() === '') {
+                    alert('Veuillez préciser pourquoi pour la rubrique "Matériel".');
+                    forcerOnglet('tab4');
+                    textQ5.focus();
+                    return;
+                }
+            }
+
+            const radioQ6 = document.querySelector('input[name="retex_q6"]:checked');
+            if (!radioQ6) {
+                alert('Veuillez répondre à la question de la rubrique "Organisation" dans le RETEX.');
+                forcerOnglet('tab4');
+                document.getElementById('block-retex-q6').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            if (radioQ6.value.toLowerCase() === 'non') {
+                const textQ6 = document.getElementById('input-text-q6');
+                if (!textQ6 || textQ6.value.trim() === '') {
+                    alert('Veuillez préciser pourquoi pour la rubrique "Organisation".');
+                    forcerOnglet('tab4');
+                    textQ6.focus();
+                    return;
+                }
+            }
+
+            if (!retexq7 || retexq7.value.trim() === '') {
+                alert('Veuillez remplir le champ "Que devons-nous améliorer ?" dans le RETEX.');
+                forcerOnglet('tab4');
+                retexq7.focus();
+                return;
+            }
+        }
+
+        if (tabId === 'tab6') {
+            const tab5Inputs = document.querySelectorAll('#tab5 input[required]');
+            for (let input of tab5Inputs) {
+                if (input.type === 'checkbox') {
+                    const checkboxes = document.querySelectorAll('#tab5 input[name="cause_ecart"]');
+                    const hasChecked = Array.from(checkboxes).some(cb => cb.checked);
+                    if (!hasChecked) {
+                        alert('Veuillez sélectionner au moins une cause probable dans la Fiche de Synthèse.');
+                        forcerOnglet('tab5');
+                        checkboxes[0].focus();
+                        return;
+                    }
+                } else if (input.value.trim() === '') {
+                    alert('Veuillez remplir tous les champs obligatoires dans la Fiche de Synthèse.');
+                    forcerOnglet('tab5');
+                    input.focus();
+                    return;
+                }
+            }
+
+            const checkAutreCause = document.getElementById('check-autre-cause');
+            const inputAutreCause = document.getElementById('input-autre-cause');
+            if (checkAutreCause && checkAutreCause.checked && (!inputAutreCause || inputAutreCause.value.trim() === '')) {
+                alert('Veuillez préciser la cause de l\'écart.');
+                forcerOnglet('tab5');
+                inputAutreCause.focus();
+                return;
+            }
+        }
+
+        forcerOnglet(tabId);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function selectService(e, name, context) {
+        selectedService = name;
+        
+        const serviceInput = document.getElementById('input-service');
+        if (!serviceInput.value.trim()) {
+            document.getElementById('active-service-label').textContent = name;
+        }
+        
+        document.getElementById('service-context-text').textContent = context;
+        document.getElementById('service-context-box').classList.remove('hidden');
+
+        document.querySelectorAll('.service-btn').forEach(btn => {
+            btn.classList.remove('border-emerald-500', 'bg-emerald-50');
+        });
+        e.currentTarget.classList.add('border-emerald-500', 'bg-emerald-50');
+    }
+
+    function toggleAutreFonction() {
+        const select = document.getElementById('select-fonction');
+        const boxAutre = document.getElementById('box-autre-fonction');
+        if (select.value === 'Autre') {
+            boxAutre.classList.remove('hidden');
+        } else {
+            boxAutre.classList.add('hidden');
+            document.getElementById('input-autre-fonction').value = '';
+        }
+    }
+
+    function toggleAutreFonctionParticipant(selectElement) {
+        const parentDiv = selectElement.closest('.participant-item');
+        const boxAutre = parentDiv.querySelector('.box-autre-participant');
+        const inputAutre = boxAutre.querySelector('input');
+        if (selectElement.value === 'Autre') {
+            boxAutre.classList.remove('hidden');
+        } else {
+            boxAutre.classList.add('hidden');
+            if (inputAutre) inputAutre.value = '';
+        }
+    }
+
+    function ajouterParticipant() {
+        const container = document.getElementById('liste-participants');
+        const newParticipant = document.createElement('div');
+        newParticipant.className = 'participant-item grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-100 pb-4 pt-2 relative';
+        
+        newParticipant.innerHTML = `
+            <div class="md:col-span-2 flex justify-between items-center">
+                <span class="text-xs font-bold text-slate-400 uppercase">Autre participant</span>
+                <button type="button" onclick="this.closest('.participant-item').remove()" class="text-xs text-rose-500 hover:underline cursor-pointer">Supprimer</button>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Fonction <span class="text-rose-500">*</span> :</label>
+                <select onchange="toggleAutreFonctionParticipant(this)" class="select-fonction-participant w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm bg-white">
+                    <option value="">-- Sélectionner une fonction --</option>
+                    <option value="ASH">ASH</option>
+                    <option value="AS">AS</option>
+                    <option value="IDE">IDE</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </div>
+            <div class="box-autre-participant hidden">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Préciser la fonction <span class="text-rose-500">*</span> :</label>
+                <input type="text" placeholder="Ex: Formateur, Médecin..." class="input-autre-participant w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Nom et Prénom <span class="text-rose-500">*</span> :</label>
+                <input type="text" placeholder="Ex: DUPONT Jean" class="input-nom-participant w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+        `;
+        container.appendChild(newParticipant);
+    }
+
+    function toggleRetexText(elementId, show) {
+        const textZone = document.getElementById(elementId);
+        if (show) {
+            textZone.classList.remove('hidden');
+        } else {
+            textZone.classList.add('hidden');
+            const textarea = textZone.querySelector('textarea');
+            if (textarea) textarea.value = '';
+        }
+    }
+
+    function toggleAutreCause() {
+        const checkbox = document.getElementById('check-autre-cause');
+        const box = document.getElementById('box-autre-cause');
+        const input = document.getElementById('input-autre-cause');
+        if (checkbox.checked) {
+            box.classList.remove('hidden');
+        } else {
+            box.classList.add('hidden');
+            if (input) input.value = '';
+        }
+    }
+
+    function togglePageExemple() {
+        const pageEx = document.getElementById('page-exemple');
+        pageEx.classList.toggle('hidden');
+    }
+
+    function masquerPageExemple() {
+        document.getElementById('page-exemple').classList.add('hidden');
+    }
+
+    function collecterPayload() {
+        const evaluateurFonctionSelect = document.getElementById('select-fonction').value;
+        const evaluateurFonction = evaluateurFonctionSelect === 'Autre' 
+            ? document.getElementById('input-autre-fonction').value 
+            : evaluateurFonctionSelect;
+
+        const participants = [];
+        document.querySelectorAll('#liste-participants .participant-item').forEach(item => {
+            const sel = item.querySelector('.select-fonction-participant').value;
+            const fct = sel === 'Autre' ? item.querySelector('.input-autre-participant').value : sel;
+            const nom = item.querySelector('.input-nom-participant').value;
+            if (nom) participants.push(`${nom} (${fct})`);
+        });
+
+        const itemsObserves = [];
+        document.querySelectorAll('.obs-item:checked').forEach(cb => {
+            itemsObserves.push(cb.value);
+        });
+
+        const causesEcart = [];
+        document.querySelectorAll('input[name="cause_ecart"]:checked').forEach(cb => {
+            if (cb.value === 'Autre') {
+                const valAutre = document.getElementById('input-autre-cause').value;
+                if (valAutre) causesEcart.push(`Autre: ${valAutre}`);
+            } else {
+                causesEcart.push(cb.value);
+            }
+        });
+
+        const grilleRapide = {};
+        for (let i = 1; i <= 8; i++) {
+            const checkedRadio = document.querySelector(`input[name="eval_q${i}"]:checked`);
+            if (checkedRadio) {
+                grilleRapide[`q${i}`] = checkedRadio.value;
+            }
+        }
+
+        return {
+            identification: {
+                service: document.getElementById('input-service').value,
+                date: document.getElementById('input-date').value,
+                evaluateurNom: document.getElementById('input-nom-prenom').value,
+                evaluateurFonction: evaluateurFonction,
+                chronoTotal: document.getElementById('header-timer').textContent,
+                contexteScenario: selectedService
+            },
+            participants: participants,
+            grilleObservation: itemsObserves,
+            grilleRapide: grilleRapide,
+            retex: {
+                ressenti: document.getElementById('retex-q1').value,
+                pointsForts: document.getElementById('retex-q2').value,
+                difficultes: document.getElementById('retex-q3').value,
+                urgenceConnu: document.querySelector('input[name="retex_q4"]:checked')?.value || '',
+                precisionUrgence: document.getElementById('input-text-q4')?.value || '',
+                materielRapide: document.querySelector('input[name="retex_q5"]:checked')?.value || '',
+                precisionMateriel: document.getElementById('input-text-q5')?.value || '',
+                rolesClairs: document.querySelector('input[name="retex_q6"]:checked')?.value || '',
+                precisionRoles: document.getElementById('input-text-q6')?.value || '',
+                ameliorations: document.getElementById('retex-q7').value
+            },
+            planAction: {
+                ceQuiFonctionne: document.getElementById('syn-fonctionne').value,
+                principalEcart: document.getElementById('syn-ecart').value,
+                causesEcart: causesEcart,
+                actionCorrective: document.getElementById('syn-action').value,
+                responsableEcheance: document.getElementById('syn-responsable').value,
+                methodeVerification: document.getElementById('syn-verification').value,
+                dateReevaluation: document.getElementById('input-date-reeval').value
+            }
+        };
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        validerGroupesCheckboxTab5();
+        const dateInput = document.getElementById('input-date');
+        if (dateInput && !dateInput.value) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
+
+        const submitBtn = document.getElementById("submitBtn");
+
+        if (submitBtn) {
+            submitBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // 1. Validation de sécurité
+                const tabIdsToVerify = ['tab2', 'tab3', 'tab4', 'tab5'];
+                let champInvalide = null;
+                let ongletDestination = null;
+
+                for (const tabId of tabIdsToVerify) {
+                    const tab = document.getElementById(tabId);
+                    if (!tab) continue;
+
+                    const inputsGroupes = tab.querySelectorAll('input[type="radio"], input[type="checkbox"][required]');
+                    const groupNames = new Set();
+                    inputsGroupes.forEach(i => { if (i.name) groupNames.add(i.name); });
+
+                    for (const name of groupNames) {
+                        const coché = tab.querySelector(`input[name="${CSS.escape(name)}"]:checked`);
+                        if (!coché) {
+                            champInvalide = tab.querySelector(`input[name="${CSS.escape(name)}"]`);
+                            ongletDestination = tabId;
+                            break;
+                        }
+                    }
+
+                    if (champInvalide) break;
+
+                    const champsTexte = tab.querySelectorAll('input[type="text"][required], input[type="date"][required], select[required], textarea[required]');
+                    for (const input of champsTexte) {
+                        if (input.closest('.hidden')) continue;
+
+                        if (input.value.trim() === '') {
+                            champInvalide = input;
+                            ongletDestination = tabId;
+                            break;
+                        }
+                    }
+
+                    if (champInvalide) break;
+                }
+
+                if (champInvalide && ongletDestination) {
+                    forcerOnglet(ongletDestination);
+
+                    setTimeout(() => {
+                        champInvalide.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        if (champInvalide.focus) champInvalide.focus();
+
+                        const zoneAvisuelle = champInvalide.closest('tr, td, .participant-item, div') || champInvalide;
+                        zoneAvisuelle.classList.add('ring-4', 'ring-rose-500', 'bg-rose-50');
+                        setTimeout(() => {
+                            zoneAvisuelle.classList.remove('ring-4', 'ring-rose-500', 'bg-rose-50');
+                        }, 3000);
+                    }, 200);
+
+                    return;
+                }
+
+                // 2. Envoi direct aux Netlify Functions
+                const payload = collecterPayload();
+
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Transmission en cours...";
+
+                try {
+                    const response = await fetch('/.netlify/functions/envoyer-pdf', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(donneesDuFormulaire)
+                    });
+
+                    if (response.ok) {
+                        alert("Vos réponses ont bien été transmises.");
+                    } else {
+                        alert("Une erreur s'est produite lors de l'envoi. Veuillez réessayer.");
+                    }
+                } catch (err) {
+                    console.error("Erreur d'envoi :", err);
+                    alert("Erreur de connexion lors de l'envoi des données.");
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Soumettre les réponses";
+                }
+
+            }, true);
+        }
+    });
+    </script>
+</body>
+</html>

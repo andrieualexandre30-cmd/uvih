@@ -1,0 +1,2 @@
+[functions]
+  included_files = ["netlify/functions/Synthese_UVIH_ACR.html"]

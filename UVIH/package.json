@@ -1,0 +1,8 @@
+{
+  "name": "projet-uvih",
+  "version": "1.0.0",
+  "dependencies": {
+    "html-pdf-node": "^1.0.8",
+    "nodemailer": "^6.9.1"
+  }
+}
