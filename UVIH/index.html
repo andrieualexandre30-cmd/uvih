@@ -1653,7 +1653,7 @@
                     const response = await fetch('/.netlify/functions/envoyer-pdf', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(donneesDuFormulaire)
+                        body: JSON.stringify(payload)
                     });
 
                     if (response.ok) {
